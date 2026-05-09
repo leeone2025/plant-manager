@@ -25,11 +25,26 @@ function handleReset() {
   capturedImage.value = null
   clear()
 }
+
+function setupApiKey() {
+  const savedKey = localStorage.getItem('qwen_api_key') || ''
+  const key = prompt(
+    '请输入通义千问 API Key\n（免费注册 dashscope.aliyun.com 获取）',
+    savedKey
+  )
+  if (key !== null) {
+    localStorage.setItem('qwen_api_key', key.trim())
+  }
+}
 </script>
 
 <template>
   <div class="page">
-    <van-nav-bar title="AI 搜索" fixed placeholder />
+    <van-nav-bar title="AI 搜索" fixed placeholder>
+      <template #right>
+        <van-icon name="setting-o" size="20" @click="setupApiKey" />
+      </template>
+    </van-nav-bar>
 
     <div class="content">
       <van-tabs v-model:active="mode">
