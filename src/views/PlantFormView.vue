@@ -55,6 +55,17 @@ function triggerCamera() {
   input.click()
 }
 
+const showPhotoAction = ref(false)
+const photoActions = [
+  { name: '拍照', callback: triggerCamera },
+  { name: '从图库选择', callback: triggerPhoto }
+]
+
+function onPhotoActionSelect(action: { name: string; callback: () => void }) {
+  showPhotoAction.value = false
+  action.callback()
+}
+
 function handleFileChange(e: Event) {
   const file = (e.target as HTMLInputElement).files?.[0]
   if (!file) return
@@ -125,21 +136,22 @@ async function handleDelete() {
       <van-form @submit="handleSave">
         <!-- Photo section -->
         <div class="photo-section">
-          <div v-if="photoPreview" class="photo-preview" @click="triggerPhoto">
+          <div v-if="photoPreview" class="photo-preview" @click="showPhotoAction = true">
             <img :src="photoPreview" alt="preview" />
             <van-icon name="close" class="photo-remove" @click.stop="removePhoto" />
           </div>
-          <div v-else class="photo-actions">
-            <div class="photo-btn" @click="triggerCamera">
-              <van-icon name="photograph" size="24" color="#4CAF50" />
-              <span>拍照</span>
-            </div>
-            <div class="photo-btn" @click="triggerPhoto">
-              <van-icon name="photo-o" size="24" color="#4CAF50" />
-              <span>相册选择</span>
-            </div>
+          <div v-else class="photo-placeholder" @click="showPhotoAction = true">
+            <van-icon name="photograph" size="32" color="#4CAF50" />
+            <p>点击拍照或从图库选择</p>
           </div>
         </div>
+
+        <van-action-sheet
+          v-model:show="showPhotoAction"
+          :actions="photoActions"
+          cancel-text="取消"
+          @select="onPhotoActionSelect"
+        />
 
         <van-cell-group inset>
           <van-field
@@ -213,15 +225,12 @@ async function handleDelete() {
   color: #fff; background: rgba(0,0,0,0.5);
   border-radius: 50%; padding: 6px; font-size: 14px;
 }
-.photo-actions {
-  display: flex; gap: 16px;
-}
-.photo-btn {
-  flex: 1; height: 120px; background: #f5f5f5;
+.photo-placeholder {
+  width: 100%; height: 120px; background: #f5f5f5;
   border-radius: 12px; border: 2px dashed #ddd;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   gap: 8px; cursor: pointer;
 }
-.photo-btn span { font-size: 13px; color: #666; }
+.photo-placeholder p { font-size: 13px; color: #666; margin: 0; }
 </style>
