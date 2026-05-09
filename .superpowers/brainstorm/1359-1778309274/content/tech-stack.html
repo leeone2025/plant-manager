@@ -1,0 +1,38 @@
+<h2>技术栈 & 分层设计</h2>
+<p class="subtitle">Vue 3 + TypeScript + PWA | 纯客户端</p>
+
+<div class="mockup">
+  <div class="mockup-header">四层架构</div>
+  <div class="mockup-body">
+    <div style="background:#e8f5e9;border-radius:4px;padding:10px;margin:6px 0;text-align:center;font-weight:bold;font-size:14px">
+      UI Layer &nbsp;—&nbsp; Vue 3 + Vant UI + Vue Router
+    </div>
+    <div style="background:#fff3e0;border-radius:4px;padding:10px;margin:6px 0;text-align:center;font-weight:bold;font-size:14px">
+      Service Layer &nbsp;—&nbsp; AI API 封装 + 图片压缩
+    </div>
+    <div style="background:#e3f2fd;border-radius:4px;padding:10px;margin:6px 0;text-align:center;font-weight:bold;font-size:14px">
+      Data Layer &nbsp;—&nbsp; IndexedDB (Dexie.js 封装)
+    </div>
+    <div style="background:#f3e5f5;border-radius:4px;padding:10px;margin:6px 0;text-align:center;font-weight:bold;font-size:14px">
+      Platform Layer &nbsp;—&nbsp; PWA Service Worker + Camera API
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>核心依赖</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:14px">
+    <tr style="background:#f5f5f5"><td style="padding:6px 10px;font-weight:bold">层</td><td style="padding:6px 10px;font-weight:bold">技术</td><td style="padding:6px 10px;font-weight:bold">作用</td></tr>
+    <tr><td style="padding:6px 10px">UI</td><td style="padding:6px 10px">Vue 3 + Vant 4 + Vue Router</td><td style="padding:6px 10px">移动端组件、页面路由</td></tr>
+    <tr><td style="padding:6px 10px">构建</td><td style="padding:6px 10px">Vite + vite-plugin-pwa</td><td style="padding:6px 10px">快速构建、PWA 自动配置</td></tr>
+    <tr><td style="padding:6px 10px">存储</td><td style="padding:6px 10px">Dexie.js (IndexedDB)</td><td style="padding:6px 10px">结构化本地存储，存植物数据+照片 Blob</td></tr>
+    <tr><td style="padding:6px 10px">AI</td><td style="padding:6px 10px">通义千问 API（Qwen-VL）</td><td style="padding:6px 10px">视觉识别 + 文本知识问答</td></tr>
+    <tr><td style="padding:6px 10px">图片</td><td style="padding:6px 10px">browser-image-compression</td><td style="padding:6px 10px">上传前压缩，减少 IndexedDB 占用</td></tr>
+    <tr><td style="padding:6px 10px">语言</td><td style="padding:6px 10px">TypeScript</td><td style="padding:6px 10px">类型安全</td></tr>
+  </table>
+</div>
+
+<div class="pros-cons">
+  <div class="pros"><h4>为什么不选 Pinia</h4><ul><li>MVP 阶段数据规模小</li><li>Dexie.js 的 reactive API 已够用</li><li>需要时再加，成本很低</li></ul></div>
+  <div class="cons"><h4>风险注意</h4><ul><li>Qwen-VL 的植物识别准确率需实测验证</li><li>API Key 纯前端暴露问题（见后续安全方案）</li></ul></div>
+</div>

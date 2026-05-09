@@ -1,0 +1,41 @@
+<h2>AI 功能集成方案</h2>
+<p class="subtitle">通义千问 Qwen-VL — 一个模型覆盖识图 + 知识问答</p>
+
+<div class="section">
+  <h3>功能 1：拍照识图</h3>
+  <div class="mockup">
+    <div class="mockup-header">拍照识别流程</div>
+    <div class="mockup-body" style="font-size:13px;text-align:center">
+      <div style="background:#e3f2fd;padding:8px;margin:4px 0;border-radius:4px">📸 调用手机相机拍照（Camera API / input capture）</div>
+      <div style="text-align:center;padding:4px">⬇</div>
+      <div style="background:#e3f2fd;padding:8px;margin:4px 0;border-radius:4px">🗜 前端压缩图片（browser-image-compression，目标 ~300KB）</div>
+      <div style="text-align:center;padding:4px">⬇</div>
+      <div style="background:#fff3e0;padding:8px;margin:4px 0;border-radius:4px">🖼 压缩后的图片 → Qwen-VL API (base64)<br><span style="color:#888;font-size:11px">Prompt: "识别图中的植物，给出中文名称、拉丁学名、科属"</span></div>
+      <div style="text-align:center;padding:4px">⬇</div>
+      <div style="background:#e8f5e9;padding:8px;margin:4px 0;border-radius:4px">📋 返回：植物名 + 学名 + 创建/关联植物档案</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>功能 2：养护知识搜索</h3>
+  <div class="mockup">
+    <div class="mockup-header">文字问答流程</div>
+    <div class="mockup-body" style="font-size:13px;text-align:center">
+      <div style="background:#f3e5f5;padding:8px;margin:4px 0;border-radius:4px">🔤 用户输入植物名或问题（如"月季怎么浇水"）</div>
+      <div style="text-align:center;padding:4px">⬇</div>
+      <div style="background:#fff3e0;padding:8px;margin:4px 0;border-radius:4px">💬 Qwen API 调用<br><span style="color:#888;font-size:11px">System: "你是植物养护专家，回答要具体、可操作"</span></div>
+      <div style="text-align:center;padding:4px">⬇</div>
+      <div style="background:#e8f5e9;padding:8px;margin:4px 0;border-radius:4px">📝 结构化返回：光照/浇水/温度/施肥/常见病虫害</div>
+    </div>
+  </div>
+</div>
+
+<div class="section">
+  <h3>API Key 安全方案</h3>
+  <p style="font-size:13px">纯前端无法真正隐藏 API Key。MVP 阶段采用：</p>
+  <div class="pros-cons">
+    <div class="pros"><h4>方案</h4><ul><li>用户在设置页自行填写自己的通义千问 API Key（免费获取）</li><li>Key 加密存储于 IndexedDB（Web Crypto API 简单混淆）</li><li>App 本身不内置任何 Key</li></ul></div>
+    <div class="cons"><h4>后续可升级</h4><ul><li>加一层 Cloudflare Worker / Vercel Function 做代理</li><li>用户可选是否使用代理</li></ul></div>
+  </div>
+</div>

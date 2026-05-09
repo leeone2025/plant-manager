@@ -1,0 +1,27 @@
+<h2>植物管理 App — 两种架构方案</h2>
+<p class="subtitle">Vue + TypeScript + PWA | 纯客户端 | 国内大模型</p>
+
+<div class="options">
+  <div class="option" data-choice="a" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>简单单页架构</h3>
+      <p>单一页面 + Tab 切换（植物列表 / AI搜索 / 设置），每个植物一个详情页。直接调用 IndexedDB + AI API</p>
+      <div class="pros-cons" style="margin-top:12px">
+        <div class="pros"><h4>Pros</h4><ul><li>开发快，结构简单</li><li>适合少量植物管理</li><li>路由简单，PWA 缓存容易</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>扩展性差，功能多了会臃肿</li><li>组件复用度低</li><li>数据逻辑和 UI 耦合</li></ul></div>
+      </div>
+    </div>
+  </div>
+  <div class="option" data-choice="b" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>分层组件架构（推荐）</h3>
+      <p>Data Layer（IndexedDB 封装）+ Service Layer（AI 调用）+ Component Layer（Vue 组件）+ 页面路由</p>
+      <div class="pros-cons" style="margin-top:12px">
+        <div class="pros"><h4>Pros</h4><ul><li>关注点分离，易测试</li><li>数据层可替换（后续换后端只需改 data layer）</li><li>组件复用，移动端体验一致</li><li>适合逐步迭代</li></ul></div>
+        <div class="cons"><h4>Cons</h4><ul><li>初期文件多一些</li><li>需要设计好接口边界</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>

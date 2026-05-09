@@ -1,0 +1,33 @@
+<h2>PWA 配置 & 离线能力</h2>
+<p class="subtitle">vite-plugin-pwa | 添加到主屏幕 | 离线可用</p>
+
+<div class="section">
+  <h3>PWA 核心配置</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:13px">
+    <tr style="background:#e8f5e9"><td style="padding:5px 10px;font-weight:bold">配置项</td><td style="padding:5px 10px;font-weight:bold">方案</td></tr>
+    <tr><td style="padding:5px 10px">缓存策略</td><td style="padding:5px 10px">静态资源 Cache First，数据始终从 IndexedDB 读</td></tr>
+    <tr><td style="padding:5px 10px">离线能力</td><td style="padding:5px 10px">所有植物数据 + 照片都在 IndexedDB，离线完全可用</td></tr>
+    <tr><td style="padding:5px 10px">安装体验</td><td style="padding:5px 10px">manifest.json → "添加到主屏幕" → 独立窗口运行</td></tr>
+    <tr><td style="padding:5px 10px">图标</td><td style="padding:5px 10px">192px + 512px 两档，自动生成</td></tr>
+    <tr><td style="padding:5px 10px">相机调用</td><td style="padding:5px 10px">&lt;input capture="environment"&gt; 直接调后置摄像头</td></tr>
+    <tr><td style="padding:5px 10px">图片存储上限</td><td style="padding:5px 10px">IndexedDB 取决于浏览器，一般可存几百 MB</td></tr>
+  </table>
+</div>
+
+<div class="section">
+  <h3>技术依赖总览</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:13px">
+    <tr style="background:#f5f5f5"><td style="padding:5px 10px;font-weight:bold">类别</td><td style="padding:5px 10px;font-weight:bold">选型</td><td style="padding:5px 10px;font-weight:bold">大小</td></tr>
+    <tr><td style="padding:5px 10px">框架</td><td style="padding:5px 10px">Vue 3 + Composition API</td><td style="padding:5px 10px">~40KB gzip</td></tr>
+    <tr><td style="padding:5px 10px">UI 库</td><td style="padding:5px 10px">Vant 4（按需引入）</td><td style="padding:5px 10px">~30KB gzip</td></tr>
+    <tr><td style="padding:5px 10px">存储</td><td style="padding:5px 10px">Dexie.js</td><td style="padding:5px 10px">~10KB gzip</td></tr>
+    <tr><td style="padding:5px 10px">PWA</td><td style="padding:5px 10px">vite-plugin-pwa</td><td style="padding:5px 10px">构建时注入</td></tr>
+    <tr><td style="padding:5px 10px">图片压缩</td><td style="padding:5px 10px">browser-image-compression</td><td style="padding:5px 10px">~5KB gzip</td></tr>
+    <tr><td style="padding:5px 10px;font-weight:bold">总计</td><td style="padding:5px 10px;font-weight:bold"></td><td style="padding:5px 10px;font-weight:bold">~85KB gzip</td></tr>
+  </table>
+</div>
+
+<div class="pros-cons">
+  <div class="pros"><h4>不依赖网络的功能</h4><ul><li>查看/新建/编辑植物档案</li><li>查看养护记录和照片</li><li>添加养护记录、拍照</li></ul></div>
+  <div class="cons"><h4>需要网络的功能</h4><ul><li>AI 拍照识图</li><li>AI 养护知识搜索</li></ul></div>
+</div>

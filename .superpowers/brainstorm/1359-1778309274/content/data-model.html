@@ -1,0 +1,52 @@
+<h2>数据模型设计</h2>
+<p class="subtitle">IndexedDB (Dexie.js) — 3 张核心表</p>
+
+<div class="section">
+  <h3>1. plants — 植物主表</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:13px">
+    <tr style="background:#e8f5e9"><td style="padding:5px 10px;font-weight:bold">字段</td><td style="padding:5px 10px;font-weight:bold">类型</td><td style="padding:5px 10px;font-weight:bold">说明</td></tr>
+    <tr><td style="padding:5px 10px;font-family:monospace">id</td><td style="padding:5px 10px;font-family:monospace">auto number</td><td style="padding:5px 10px">主键</td></tr>
+    <tr><td style="padding:5px 10px;font-family:monospace">name</td><td style="padding:5px 10px;font-family:monospace">string</td><td style="padding:5px 10px">用户取名（如"阳台月季"）</td></tr>
+    <tr><td style="padding:5px 10px;font-family:monospace">species</td><td style="padding:5px 10px;font-family:monospace">string?</td><td style="padding:5px 10px">AI 识别/用户填写的品种名</td></tr>
+    <tr><td style="padding:5px 10px;font-family:monospace">sowDate</td><td style="padding:5px 10px;font-family:monospace">date?</td><td style="padding:5px 10px">播种日期</td></tr>
+    <tr><td style="padding:5px 10px;font-family:monospace">location</td><td style="padding:5px 10px;font-family:monospace">string?</td><td style="padding:5px 10px">摆放位置（阳台/客厅/卧室）</td></tr>
+    <tr><td style="padding:5px 10px;font-family:monospace">notes</td><td style="padding:5px 10px;font-family:monospace">string?</td><td style="padding:5px 10px">备注</td></tr>
+    <tr><td style="padding:5px 10px;font-family:monospace">coverPhotoId</td><td style="padding:5px 10px;font-family:monospace">number?</td><td style="padding:5px 10px">封面照片 id</td></tr>
+    <tr><td style="padding:5px 10px;font-family:monospace">createdAt / updatedAt</td><td style="padding:5px 10px;font-family:monospace">date</td><td style="padding:5px 10px">时间戳</td></tr>
+  </table>
+</div>
+
+<div class="section">
+  <h3>2. careRecords — 养护记录表</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:13px">
+    <tr style="background:#fff3e0"><td style="padding:5px 10px;font-weight:bold">字段</td><td style="padding:5px 10px;font-weight:bold">类型</td><td style="padding:5px 10px;font-weight:bold">说明</td></tr>
+    <tr><td style="padding:5px 10px;font-family:monospace">id</td><td style="padding:5px 10px;font-family:monospace">auto number</td><td style="padding:5px 10px">主键</td></tr>
+    <tr><td style="padding:5px 10px;font-family:monospace">plantId</td><td style="padding:5px 10px;font-family:monospace">number</td><td style="padding:5px 10px">关联植物</td></tr>
+    <tr><td style="padding:5px 10px;font-family:monospace">type</td><td style="padding:5px 10px;font-family:monospace">enum</td><td style="padding:5px 10px">watering | fertilizing | repotting | pruning | other</td></tr>
+    <tr><td style="padding:5px 10px;font-family:monospace">date</td><td style="padding:5px 10px;font-family:monospace">date</td><td style="padding:5px 10px">操作日期</td></tr>
+    <tr><td style="padding:5px 10px;font-family:monospace">note</td><td style="padding:5px 10px;font-family:monospace">string?</td><td style="padding:5px 10px">备注</td></tr>
+    <tr><td style="padding:5px 10px;font-family:monospace">createdAt</td><td style="padding:5px 10px;font-family:monospace">date</td><td style="padding:5px 10px">自动时间戳</td></tr>
+  </table>
+</div>
+
+<div class="section">
+  <h3>3. photos — 照片表</h3>
+  <table style="width:100%;border-collapse:collapse;font-size:13px">
+    <tr style="background:#e3f2fd"><td style="padding:5px 10px;font-weight:bold">字段</td><td style="padding:5px 10px;font-weight:bold">类型</td><td style="padding:5px 10px;font-weight:bold">说明</td></tr>
+    <tr><td style="padding:5px 10px;font-family:monospace">id</td><td style="padding:5px 10px;font-family:monospace">auto number</td><td style="padding:5px 10px">主键</td></tr>
+    <tr><td style="padding:5px 10px;font-family:monospace">plantId</td><td style="padding:5px 10px;font-family:monospace">number</td><td style="padding:5px 10px">关联植物</td></tr>
+    <tr><td style="padding:5px 10px;font-family:monospace">data</td><td style="padding:5px 10px;font-family:monospace">Blob</td><td style="padding:5px 10px">压缩后的图片二进制</td></tr>
+    <tr><td style="padding:5px 10px;font-family:monospace">thumbnail</td><td style="padding:5px 10px;font-family:monospace">Blob</td><td style="padding:5px 10px">缩略图</td></tr>
+    <tr><td style="padding:5px 10px;font-family:monospace">takenAt</td><td style="padding:5px 10px;font-family:monospace">date</td><td style="padding:5px 10px">拍摄时间</td></tr>
+    <tr><td style="padding:5px 10px;font-family:monospace">createdAt</td><td style="padding:5px 10px;font-family:monospace">date</td><td style="padding:5px 10px">自动时间戳</td></tr>
+  </table>
+</div>
+
+<div class="section">
+  <h3>数据关系</h3>
+  <div class="placeholder" style="text-align:center;font-size:14px;padding:16px">
+    plants (1) ────&gt; (N) careRecords<br>
+    plants (1) ────&gt; (N) photos<br>
+    plants.coverPhotoId ──&gt; photos.id (nullable)
+  </div>
+</div>
