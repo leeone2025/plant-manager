@@ -41,7 +41,6 @@ onBeforeUnmount(() => {
 function triggerPhoto() {
   const input = document.createElement('input')
   input.type = 'file'
-  input.accept = 'image/*'
   input.onchange = handleFileChange
   input.click()
 }
