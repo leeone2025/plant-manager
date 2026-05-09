@@ -7,6 +7,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    CameraCapture: typeof import('./src/components/CameraCapture.vue')['default']
     CareTimeline: typeof import('./src/components/CareTimeline.vue')['default']
     PhotoGrid: typeof import('./src/components/PhotoGrid.vue')['default']
     PlantCard: typeof import('./src/components/PlantCard.vue')['default']
