@@ -42,11 +42,11 @@ export const photoService = {
 
   /** Get all photos for a plant, newest first */
   async listByPlant(plantId: number): Promise<Photo[]> {
-    return db.photos
+    const photos = await db.photos
       .where('plantId')
       .equals(plantId)
-      .reverse()
       .sortBy('createdAt')
+    return photos.reverse()
   },
 
   /** Get a Blob URL for a photo's original data */
