@@ -1,8 +1,9 @@
 <!-- src/views/PlantFormView.vue -->
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { plantService } from '@/services/plantService'
+import { photoService } from '@/services/photoService'
 
 const route = useRoute()
 const router = useRouter()
@@ -17,6 +18,9 @@ const notes = ref('')
 const saving = ref(false)
 const deleting = ref(false)
 
+const photoFile = ref<File | null>(null)
+const photoPreview = ref<string | null>(null)
+
 onMounted(async () => {
   if (isEdit && plantId) {
     const plant = await plantService.get(plantId)
@@ -29,6 +33,42 @@ onMounted(async () => {
     }
   }
 })
+
+onBeforeUnmount(() => {
+  if (photoPreview.value) URL.revokeObjectURL(photoPreview.value)
+})
+
+function triggerPhoto() {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = 'image/*'
+  input.onchange = handleFileChange
+  input.click()
+}
+
+function triggerCamera() {
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = 'image/*'
+  input.capture = 'environment'
+  input.onchange = handleFileChange
+  input.click()
+}
+
+function handleFileChange(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  if (!file) return
+
+  if (photoPreview.value) URL.revokeObjectURL(photoPreview.value)
+  photoFile.value = file
+  photoPreview.value = URL.createObjectURL(file)
+}
+
+function removePhoto() {
+  if (photoPreview.value) URL.revokeObjectURL(photoPreview.value)
+  photoFile.value = null
+  photoPreview.value = null
+}
 
 async function handleSave() {
   if (!name.value.trim()) return
@@ -43,11 +83,18 @@ async function handleSave() {
       notes: notes.value.trim() || undefined
     }
 
+    let targetId = plantId
+
     if (isEdit && plantId) {
       await plantService.update(plantId, baseData)
     } else {
-      await plantService.create(baseData)
+      targetId = await plantService.create(baseData)
     }
+
+    if (photoFile.value && targetId) {
+      await photoService.save(targetId, photoFile.value)
+    }
+
     router.back()
   } finally {
     saving.value = false
@@ -76,6 +123,24 @@ async function handleDelete() {
 
     <div class="content">
       <van-form @submit="handleSave">
+        <!-- Photo section -->
+        <div class="photo-section">
+          <div v-if="photoPreview" class="photo-preview" @click="triggerPhoto">
+            <img :src="photoPreview" alt="preview" />
+            <van-icon name="close" class="photo-remove" @click.stop="removePhoto" />
+          </div>
+          <div v-else class="photo-actions">
+            <div class="photo-btn" @click="triggerCamera">
+              <van-icon name="photograph" size="24" color="#4CAF50" />
+              <span>拍照</span>
+            </div>
+            <div class="photo-btn" @click="triggerPhoto">
+              <van-icon name="photo-o" size="24" color="#4CAF50" />
+              <span>相册选择</span>
+            </div>
+          </div>
+        </div>
+
         <van-cell-group inset>
           <van-field
             v-model="name"
@@ -136,4 +201,27 @@ async function handleDelete() {
 <style scoped>
 .page { min-height: 100vh; background: #f7f8fa; padding-bottom: 50px; }
 .content { padding: 16px 0; }
+
+.photo-section { padding: 0 16px; margin-bottom: 16px; }
+.photo-preview {
+  width: 100%; height: 200px; border-radius: 12px; overflow: hidden;
+  position: relative; cursor: pointer;
+}
+.photo-preview img { width: 100%; height: 100%; object-fit: cover; }
+.photo-remove {
+  position: absolute; top: 8px; right: 8px;
+  color: #fff; background: rgba(0,0,0,0.5);
+  border-radius: 50%; padding: 6px; font-size: 14px;
+}
+.photo-actions {
+  display: flex; gap: 16px;
+}
+.photo-btn {
+  flex: 1; height: 120px; background: #f5f5f5;
+  border-radius: 12px; border: 2px dashed #ddd;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 8px; cursor: pointer;
+}
+.photo-btn span { font-size: 13px; color: #666; }
 </style>
