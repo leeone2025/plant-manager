@@ -4,11 +4,11 @@ import { db, type CareRecord, type CareType } from '@/db'
 export const careService = {
   /** Get all care records for a plant, ordered by date descending */
   async listByPlant(plantId: number): Promise<CareRecord[]> {
-    return db.careRecords
+    const records = await db.careRecords
       .where('plantId')
       .equals(plantId)
-      .reverse()
       .sortBy('date')
+    return records.reverse()
   },
 
   /** Add a care record */
