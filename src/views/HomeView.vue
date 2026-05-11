@@ -1,9 +1,23 @@
 <!-- src/views/HomeView.vue -->
 <script setup lang="ts">
+import { ref, watch } from 'vue'
 import { usePlantList } from '@/composables/usePlantList'
+import { photoService } from '@/services/photoService'
 import PlantCard from '@/components/PlantCard.vue'
 
 const { plants, loading, refresh } = usePlantList()
+const coverUrls = ref<Record<number, string>>({})
+
+watch(plants, async (list) => {
+  const map: Record<number, string> = {}
+  for (const p of list) {
+    if (p.coverPhotoId) {
+      const url = await photoService.getThumbnailUrl(p.coverPhotoId)
+      if (url) map[p.id!] = url
+    }
+  }
+  coverUrls.value = map
+}, { immediate: true })
 </script>
 
 <template>
@@ -18,7 +32,7 @@ const { plants, loading, refresh } = usePlantList()
       <van-loading v-if="loading" class="center" />
       <van-empty v-else-if="plants.length === 0" description="还没有植物，点右上角 + 添加" />
       <van-cell-group v-else inset>
-        <PlantCard v-for="plant in plants" :key="plant.id" :plant="plant" />
+        <PlantCard v-for="plant in plants" :key="plant.id" :plant="plant" :cover-url="coverUrls[plant.id!]" />
       </van-cell-group>
     </div>
   </div>

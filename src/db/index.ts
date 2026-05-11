@@ -37,6 +37,17 @@ export interface Photo {
   createdAt: string
 }
 
+/** AI search/identify history */
+export interface AIHistory {
+  id?: number
+  type: 'identify' | 'search'
+  query?: string            // search query text
+  imageThumbnail?: string   // base64 thumbnail for identify results
+  resultName: string
+  resultText: string
+  createdAt: string
+}
+
 /** Chinese labels for care types */
 export const careTypeLabels: Record<CareType, string> = {
   watering: '浇水',
@@ -50,6 +61,7 @@ class PlantDB extends Dexie {
   plants!: Table<Plant, number>
   careRecords!: Table<CareRecord, number>
   photos!: Table<Photo, number>
+  aiHistory!: Table<AIHistory, number>
 
   constructor() {
     super('PlantManagerDB')
@@ -57,6 +69,12 @@ class PlantDB extends Dexie {
       plants: '++id, name, createdAt',
       careRecords: '++id, plantId, date, type',
       photos: '++id, plantId, createdAt'
+    })
+    this.version(2).stores({
+      plants: '++id, name, createdAt',
+      careRecords: '++id, plantId, date, type',
+      photos: '++id, plantId, createdAt',
+      aiHistory: '++id, type, createdAt'
     })
   }
 }

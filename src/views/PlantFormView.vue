@@ -38,31 +38,12 @@ onBeforeUnmount(() => {
   if (photoPreview.value) URL.revokeObjectURL(photoPreview.value)
 })
 
-function triggerPhoto() {
-  const input = document.createElement('input')
-  input.type = 'file'
-  input.onchange = handleFileChange
-  input.click()
-}
-
-function triggerCamera() {
+function triggerPhotoPicker() {
   const input = document.createElement('input')
   input.type = 'file'
   input.accept = 'image/*'
-  input.capture = 'environment'
   input.onchange = handleFileChange
   input.click()
-}
-
-const showPhotoAction = ref(false)
-const photoActions = [
-  { name: '拍照', callback: triggerCamera },
-  { name: '从图库选择', callback: triggerPhoto }
-]
-
-function onPhotoActionSelect(action: { name: string; callback: () => void }) {
-  showPhotoAction.value = false
-  action.callback()
 }
 
 function handleFileChange(e: Event) {
@@ -135,22 +116,15 @@ async function handleDelete() {
       <van-form @submit="handleSave">
         <!-- Photo section -->
         <div class="photo-section">
-          <div v-if="photoPreview" class="photo-preview" @click="showPhotoAction = true">
+          <div v-if="photoPreview" class="photo-preview" @click="triggerPhotoPicker">
             <img :src="photoPreview" alt="preview" />
             <van-icon name="close" class="photo-remove" @click.stop="removePhoto" />
           </div>
-          <div v-else class="photo-placeholder" @click="showPhotoAction = true">
+          <div v-else class="photo-placeholder" @click="triggerPhotoPicker">
             <van-icon name="photograph" size="32" color="#4CAF50" />
-            <p>点击拍照或从图库选择</p>
+            <p>点击添加照片</p>
           </div>
         </div>
-
-        <van-action-sheet
-          v-model:show="showPhotoAction"
-          :actions="photoActions"
-          cancel-text="取消"
-          @select="onPhotoActionSelect"
-        />
 
         <van-cell-group inset>
           <van-field

@@ -3,12 +3,11 @@
 import { onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { usePlant } from '@/composables/usePlant'
-import PhotoGrid from '@/components/PhotoGrid.vue'
 import CareTimeline from '@/components/CareTimeline.vue'
 
 const route = useRoute()
 const plantId = Number(route.params.id)
-const { plant, records, photoUrls, photoIds, counts, loading, load, addRecord, removeRecord, addPhoto, removePhoto } = usePlant()
+const { plant, records, photoUrls, counts, loading, load, addRecord, removeRecord } = usePlant()
 
 onMounted(() => load(plantId))
 
@@ -22,23 +21,6 @@ function handleCareAdd(type: string) {
 
 function handleCareRemove(id: number) {
   removeRecord(id)
-}
-
-function handlePhotoAdd() {
-  const input = document.createElement('input')
-  input.type = 'file'
-  input.accept = 'image/*'
-  input.capture = 'environment'
-  input.onchange = async (e) => {
-    const file = (e.target as HTMLInputElement).files?.[0]
-    if (file) await addPhoto(plantId, file)
-  }
-  input.click()
-}
-
-function handlePhotoRemove(index: number) {
-  const photoId = photoIds.value[index]
-  if (photoId !== undefined) removePhoto(photoId)
 }
 </script>
 
@@ -58,11 +40,9 @@ function handlePhotoRemove(index: number) {
 
     <template v-else-if="plant">
       <div class="hero">
-        <div
-          class="hero-image"
-          :style="plant.coverPhotoId && photoUrls.length > 0 ? { backgroundImage: `url(${photoUrls[0]})` } : {}"
-        >
-          <div v-if="!plant.coverPhotoId || photoUrls.length === 0" class="hero-placeholder">🌱</div>
+        <div class="hero-image">
+          <img v-if="plant.coverPhotoId && photoUrls.length > 0" :src="photoUrls[0]" class="hero-img" />
+          <div v-else class="hero-placeholder">🌱</div>
         </div>
         <div class="hero-info">
           <h2>{{ plant.name }}</h2>
@@ -74,10 +54,6 @@ function handlePhotoRemove(index: number) {
           <p v-if="plant.notes" class="hero-notes">{{ plant.notes }}</p>
         </div>
       </div>
-
-      <van-cell-group inset style="margin-top:12px">
-        <PhotoGrid :urls="photoUrls" @add="handlePhotoAdd" @remove="handlePhotoRemove" />
-      </van-cell-group>
 
       <van-cell-group inset style="margin-top:12px">
         <CareTimeline
@@ -98,11 +74,18 @@ function handlePhotoRemove(index: number) {
 .center { display: flex; justify-content: center; padding: 100px 0; }
 .hero { background: #fff; }
 .hero-image {
-  width: 100%; height: 240px; background-size: cover;
-  background-position: center; background-color: #e8f5e9;
-  display: flex; align-items: center; justify-content: center;
+  width: 100%; height: 240px; background-color: #e8f5e9;
+  position: relative; overflow: hidden;
 }
-.hero-placeholder { font-size: 80px; }
+.hero-img {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  object-fit: cover;
+}
+.hero-placeholder {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 80px;
+}
 .hero-info { padding: 16px; }
 .hero-info h2 { margin: 0; font-size: 22px; }
 .species { color: #666; margin: 4px 0; font-size: 14px; }

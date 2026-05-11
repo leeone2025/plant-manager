@@ -10,8 +10,12 @@ export function useAI() {
   async function identifyPlant(imageBase64: string) {
     loading.value = true
     error.value = null
+    result.value = { name: '识别中...', rawText: '' }
     try {
-      result.value = await aiService.identify(imageBase64)
+      const final = await aiService.identifyStream(imageBase64, (chunk) => {
+        result.value = { ...result.value!, rawText: result.value!.rawText + chunk }
+      })
+      result.value = final
     } catch (e) {
       error.value = e instanceof Error ? e.message : '识别失败'
       result.value = null
@@ -23,8 +27,12 @@ export function useAI() {
   async function searchKnowledge(query: string) {
     loading.value = true
     error.value = null
+    result.value = { name: '搜索中...', rawText: '' }
     try {
-      result.value = await aiService.search(query)
+      const final = await aiService.searchStream(query, (chunk) => {
+        result.value = { ...result.value!, rawText: result.value!.rawText + chunk }
+      })
+      result.value = final
     } catch (e) {
       error.value = e instanceof Error ? e.message : '搜索失败'
       result.value = null

@@ -1,4 +1,8 @@
 // src/services/aiService.ts
+import { db, type AIHistory } from '@/db'
+import imageCompression from 'browser-image-compression'
+
+export type { AIHistory } from '@/db'
 
 export interface AIResult {
   name: string           // Plant Chinese name
@@ -16,24 +20,18 @@ export interface AIResult {
   rawText: string        // Raw response text
 }
 
-const API_BASE = 'https://dashscope.aliyuncs.com/compatible-mode/v1'
+const API_BASE = 'https://ark.cn-beijing.volces.com/api/v3'
 
 async function getApiKey(): Promise<string> {
-  const key = localStorage.getItem('qwen_api_key')
-  if (!key) throw new Error('请先在设置中配置通义千问 API Key')
+  const key = localStorage.getItem('doubao_api_key')
+  if (!key) throw new Error('请先在设置中配置豆包 API Key')
   return key
 }
 
-async function callQwen(prompt: string, imageBase64?: string): Promise<string> {
-  const apiKey = await getApiKey()
-
+function buildMessages(prompt: string, imageBase64?: string): Array<Record<string, unknown>> {
   const messages: Array<Record<string, unknown>> = [
-    {
-      role: 'system',
-      content: '你是一位专业的植物学专家和园艺师。请用中文回答，内容准确、具体、可操作。'
-    }
+    { role: 'system', content: '你是植物学专家，用中文简要且精准回答。' }
   ]
-
   if (imageBase64) {
     messages.push({
       role: 'user',
@@ -45,6 +43,16 @@ async function callQwen(prompt: string, imageBase64?: string): Promise<string> {
   } else {
     messages.push({ role: 'user', content: prompt })
   }
+  return messages
+}
+
+/** Stream AI response via SSE, calls onChunk for each text delta, returns full text */
+async function callAIStream(
+  prompt: string,
+  onChunk: (text: string) => void,
+  imageBase64?: string
+): Promise<string> {
+  const apiKey = await getApiKey()
 
   const res = await fetch(`${API_BASE}/chat/completions`, {
     method: 'POST',
@@ -53,61 +61,115 @@ async function callQwen(prompt: string, imageBase64?: string): Promise<string> {
       'Authorization': `Bearer ${apiKey}`
     },
     body: JSON.stringify({
-      model: 'qwen-vl-max',
-      messages,
-      max_tokens: 1500,
-      temperature: 0.3
+      model: 'doubao-seed-2-0-lite-260428',
+      messages: buildMessages(prompt, imageBase64),
+      max_tokens: 800,
+      stream: true,
+      thinking: { type: 'disabled' }
     })
   })
 
   if (!res.ok) {
     const err = await res.json().catch(() => ({ message: res.statusText }))
-    const errMsg = (err as { message?: string }).message ?? 'API 调用失败'
-    throw new Error(errMsg)
+    throw new Error((err as { message?: string }).message ?? 'API 调用失败')
   }
 
-  const data = await res.json() as {
-    choices: Array<{ message: { content: string } }>
+  const reader = res.body!.getReader()
+  const decoder = new TextDecoder()
+  let fullText = ''
+  let buffer = ''
+
+  while (true) {
+    const { done, value } = await reader.read()
+    if (done) break
+    buffer += decoder.decode(value, { stream: true })
+    const lines = buffer.split('\n')
+    buffer = lines.pop() || ''
+    for (const line of lines) {
+      if (!line.startsWith('data: ')) continue
+      const data = line.slice(6)
+      if (data === '[DONE]') continue
+      try {
+        const content = JSON.parse(data).choices?.[0]?.delta?.content
+        if (content) {
+          fullText += content
+          onChunk(content)
+        }
+      } catch { /* skip malformed chunk */ }
+    }
   }
-  return data.choices[0].message.content
+  return fullText
 }
 
 function parseResult(text: string): AIResult {
-  const nameMatch = text.match(/(?:这是|识别为|植物是|名称[：:])?\s*([一-鿿]{2,10}(?:玫瑰|月季|牡丹|菊花|兰花|绿萝|吊兰|发财树|龟背竹|琴叶榕|仙人掌|多肉|薄荷|薰衣草|茉莉|栀子|绣球|海棠|君子兰|文竹|常春藤|虎皮兰|芦荟|昙花|蟹爪兰|长寿花|天竺葵|矮牵牛|向日葵|郁金香|风信子|百合|康乃馨|马蹄莲|鹤望兰|昙花|令箭荷花|三角梅|杜鹃|茶花|桂花|樱花|桃花|梅花|杏花|梨花|石榴|柠檬|金桔|无花果)[一-鿿]?)/)
-  const name = nameMatch ? nameMatch[1] : '未知植物'
+  // Extract first plant name from "名称：XXX" pattern (AI is prompted to follow this format)
+  const match = text.match(/名称[：:]\s*(.+?)(?:[\n\r]|$)/)
+  let name = match ? match[1].replace(/\*+/g, '').replace(/#+/g, '').trim() : ''
+  // Limit to first sentence/phrase, not a paragraph
+  if (name.length > 20) name = name.split(/[，,。]/)[0].trim()
+  if (name.length > 20) name = name.slice(0, 20)
 
-  return {
-    name,
-    rawText: text
-  }
+  return { name: name || '未知植物', rawText: text }
 }
 
 export const aiService = {
-  /** Identify plant from photo */
-  async identify(imageBase64: string): Promise<AIResult> {
-    const prompt = `请识别这张图片中的植物，并以以下格式回答：
-1. 中文名称
-2. 拉丁学名
-3. 科属
-4. 生长习性（光照、温度、水分需求）
-5. 养护要点`
-
-    const text = await callQwen(prompt, imageBase64)
+  /** Identify plant from photo — streams result via onChunk */
+  async identifyStream(
+    imageBase64: string,
+    onChunk: (text: string) => void
+  ): Promise<AIResult> {
+    const prompt = '识别图中植物，简要列出：名称、科属、习性、养护要点。其中养护要点要求简洁精准，分为：光照，浇水，温度，土壤，施肥5个维度'
+    const text = await callAIStream(prompt, onChunk, imageBase64)
     return { ...parseResult(text), rawText: text }
   },
 
-  /** Search for plant care knowledge */
-  async search(query: string): Promise<AIResult> {
-    const prompt = `请提供关于"${query}"的详细养护信息，以以下格式回答：
-1. 植物名称和基本介绍
-2. 光照需求
-3. 浇水频率和方法
-4. 适宜温度
-5. 土壤要求
-6. 施肥建议
-7. 常见病虫害及防治`
-
-    const text = await callQwen(prompt)
+  /** Search for plant care knowledge — streams result via onChunk */
+  async searchStream(
+    query: string,
+    onChunk: (text: string) => void
+  ): Promise<AIResult> {
+    const prompt = `${query}的查询结果：名称、科属、习性、养护要点。其中养护要点要求简洁精准，分为：光照，浇水，温度，土壤，施肥5个维度`
+    const text = await callAIStream(prompt, onChunk)
     return { ...parseResult(text), rawText: text }
+  },
+
+  /** Generate a small thumbnail from a base64 image */
+  async generateThumbnail(imageBase64: string, maxSize: number = 200): Promise<string> {
+    const blob = await fetch(`data:image/jpeg;base64,${imageBase64}`).then(r => r.blob())
+    const file = new File([blob], 'thumb.jpg', { type: 'image/jpeg' })
+    const compressed = await imageCompression(file, {
+      maxSizeMB: 0.03,
+      maxWidthOrHeight: maxSize,
+      useWebWorker: false
+    })
+    return new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve((reader.result as string).split(',')[1])
+      reader.readAsDataURL(compressed)
+    })
+  },
+
+  /** Save a history entry */
+  async saveHistory(entry: Omit<AIHistory, 'id' | 'createdAt'>): Promise<number> {
+    return db.aiHistory.add({
+      ...entry,
+      createdAt: new Date().toISOString()
+    })
+  },
+
+  /** List all history entries, newest first */
+  async listHistory(): Promise<AIHistory[]> {
+    const items = await db.aiHistory.orderBy('createdAt').toArray()
+    return items.reverse()
+  },
+
+  /** Delete a single history entry */
+  async deleteHistory(id: number): Promise<void> {
+    await db.aiHistory.delete(id)
+  },
+
+  /** Clear all history */
+  async clearHistory(): Promise<void> {
+    await db.aiHistory.clear()
   }
 }

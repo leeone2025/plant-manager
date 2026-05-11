@@ -28,7 +28,7 @@ export function usePlant() {
       counts.value = await careService.countByType(id)
       // Revoke previous blob URLs to prevent memory leaks
       photoUrls.value.forEach(url => URL.revokeObjectURL(url))
-      photoUrls.value = photos.map(ph => URL.createObjectURL(ph.thumbnail))
+      photoUrls.value = photos.map(ph => URL.createObjectURL(ph.data))
       photoIds.value = photos.map(ph => ph.id!)
     } finally {
       loading.value = false

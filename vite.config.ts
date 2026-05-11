@@ -6,6 +6,7 @@ import { VantResolver } from '@vant/auto-import-resolver'
 import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
+  base: '/plant-manager/',
   plugins: [
     vue(),
     Components({
@@ -32,12 +33,12 @@ export default defineConfig({
       workbox: {
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/dashscope\.aliyuncs\.com\/.*/i,
+            urlPattern: /^https:\/\/ark\.cn-beijing\.volces\.com\/.*/i,
             handler: 'NetworkOnly',
             options: {
-              cacheName: 'dashscope-api',
+              cacheName: 'doubao-api',
               backgroundSync: {
-                name: 'dashscope-queue'
+                name: 'doubao-queue'
               }
             }
           }

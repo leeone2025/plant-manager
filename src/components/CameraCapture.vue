@@ -4,7 +4,7 @@ const emit = defineEmits<{
   capture: [base64: string]
 }>()
 
-function openCamera() {
+async function openCamera() {
   const input = document.createElement('input')
   input.type = 'file'
   input.accept = 'image/*'
@@ -13,11 +13,14 @@ function openCamera() {
     const file = (e.target as HTMLInputElement).files?.[0]
     if (!file) return
 
+    const { fixOrientation } = await import('@/services/photoService')
+    const oriented = await fixOrientation(file)
+
     const { default: imageCompression } = await import('browser-image-compression')
-    const compressed = await imageCompression(file, {
-      maxSizeMB: 0.5,
-      maxWidthOrHeight: 1920,
-      useWebWorker: true
+    const compressed = await imageCompression(oriented, {
+      maxSizeMB: 0.3,
+      maxWidthOrHeight: 1024,
+      useWebWorker: false
     })
 
     const reader = new FileReader()
